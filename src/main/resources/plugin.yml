@@ -1,0 +1,6 @@
+name: ${project.name}
+version: ${project.version}
+main: me.starchaser.karenprotect2
+softdepend: [WorldEdit, WorldGuard]
+authors: [_StarChaser]
+website: starchaser.me
