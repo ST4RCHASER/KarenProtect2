@@ -2,7 +2,7 @@ package me.starchaser.SQLMamager;
 
 
 import me.starchaser.KPManager;
-import me.starchaser.karenprotect2;
+import me.starchaser.karenprotect;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.sql.Statement;
 import java.util.logging.Level;
 
 public class SQLite extends Database{
-    public SQLite(karenprotect2 instance, KPManager kpManager){
+    public SQLite(karenprotect instance, KPManager kpManager){
         super(instance,kpManager);
     }
     public String SQLiteCreateKPBlockTable = "CREATE TABLE IF NOT EXISTS `KPBlocks` (`protection_uuid` varchar(64) NOT NULL, `placer_uuid` varchar(64) NOT NULL,`world` varchar(64) NOT NULL,`x` int(16) NOT NULL,`y` int(16) NOT NULL,`z` int(16) NOT NULL,`return_itemstack` varchar(4096) NOT NULL,`is_hideing` varchar(8) NOT NULL,`size_x` int(16) NOT NULL,`size_y` int(16) NOT NULL,`size_z` int(16) NOT NULL, PRIMARY KEY (`protection_uuid`));";

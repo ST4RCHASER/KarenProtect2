@@ -4,12 +4,10 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.zachsthings.libcomponents.config.ConfigurationFile;
 import me.starchaser.Events.WGRegionEventsListener;
 import me.starchaser.SQLMamager.Database;
 import me.starchaser.SQLMamager.SQLite;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -24,7 +22,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
-import org.codemc.worldguardwrapper.region.IWrappedDomain;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
 
 import javax.xml.bind.DatatypeConverter;
@@ -41,26 +38,33 @@ import java.util.UUID;
 
 public class KPManager {
     private Plugin worldguard_plugin;
-    private karenprotect2 kp_plugin;
+    private karenprotect kp_plugin;
     private String plugin_folder_path;
     private WorldGuardWrapper wg_interface;
     private boolean debug = true;
     private Connection SQL_CONNECTION;
     private ArrayList<KPBlock> blocks_list;
-
-    public KPManager(karenprotect2 kp_plugin, Plugin worldguard_plugin) {
+    private utils utils;
+    public KPManager(karenprotect kp_plugin, Plugin worldguard_plugin) {
         this.kp_plugin = kp_plugin;
         this.worldguard_plugin = worldguard_plugin;
-        plugin_folder_path = kp_plugin.getDataFolder().getAbsoluteFile().getParentFile().getParentFile().getAbsolutePath() + File.separator + "plugins" + File.separator + "KarenProtect2" + File.separator;
+        plugin_folder_path = kp_plugin.getDataFolder().getAbsoluteFile().getParentFile().getParentFile().getAbsolutePath() + File.separator + "plugins" + File.separator + "KarenProtect" + File.separator;
         registerEvents();
         wg_interface = makeNewWorldGuardInterface();
         Database connection = new SQLite(kp_plugin, this);
         connection.load();
         SQL_CONNECTION = connection.getSQLConnection();
         if (isUseFAWE()) {
-            Log(false, false, "FAWE Detached! Warning KarenProtect2 is not fully support if you found bug you can report to my discord");
+            Log(false, false, "FAWE Detached! Warning KarenProtect is not fully support if you found bug you can report to my discord");
         }
         blocks_list = new ArrayList<>();
+        try {
+            this.utils = new utils(this,kp_plugin,new Metrics(kp_plugin, 3003));
+        } catch (Exception  e) {
+            Bukkit.getLogger().warning("Error on sending info to bstats");
+        } catch (Error e){
+            Bukkit.getLogger().warning("Error on sending info to bstats");
+        }
     }
 
     public Connection getSQLConnection() {
@@ -137,13 +141,12 @@ public class KPManager {
             if (create_message_file) {
                 YamlConfiguration messages_config = new YamlConfiguration();
                 messages_config.set("version",0);
-                messages_config.set("general.prefix","§7KP2: §a");
+                messages_config.set("general.prefix","§7KP: §a");
                 messages_config.save(message_file);
             }
             if (create_config_file) {
                 YamlConfiguration config = new YamlConfiguration();
                 config.set("version",0);
-
             }
             if (create_blocks_file){
                 YamlConfiguration block_1_config = new YamlConfiguration();
@@ -327,13 +330,13 @@ public class KPManager {
     }
     public KPRegionInfo getKPRegionInfo(String uuid) {
         try {
-            ResultSet result = starchaser.kpManager.getSQLConnection().createStatement().executeQuery("SELECT * FROM `KPBlocks` WHERE `protection_uuid` = '" + uuid + "'");
+            ResultSet result = utils.kpManager.getSQLConnection().createStatement().executeQuery("SELECT * FROM `KPBlocks` WHERE `protection_uuid` = '" + uuid + "'");
             if (result.isBeforeFirst()) {
                 result.next();
                 return new KPRegionInfo(result.getString("protection_uuid"),result.getString("world"),result.getString("return_itemstack"),result.getInt("x"),result.getInt("y"),result.getInt("z"),result.getString("is_hideing"),result.getInt("size_x"),result.getInt("size_y"),result.getInt("size_z"));
             }
         } catch (SQLException e) {
-            starchaser.kpManager.Log(false,true,"Error on getInfo executeQuery to SQL");
+            utils.kpManager.Log(false,true,"Error on getInfo executeQuery to SQL");
             e.printStackTrace();
         }
         return null;
@@ -351,21 +354,21 @@ public class KPManager {
             Log(true,false,"UUID: " + uuid + " removed form region manager (" + info.getProtectionUUID() + ")");
         }
         try {
-            starchaser.kpManager.getSQLConnection().createStatement().executeUpdate("DELETE FROM `KPBlocks` WHERE `protection_uuid` = '" + uuid + "'");
+            utils.kpManager.getSQLConnection().createStatement().executeUpdate("DELETE FROM `KPBlocks` WHERE `protection_uuid` = '" + uuid + "'");
             Log(true,false,"UUID: " + uuid + " removed form database!");
         } catch (SQLException e) {
-            starchaser.kpManager.Log(false,true,"Error on getInfo executeQuery to SQL");
+            utils.kpManager.Log(false,true,"Error on getInfo executeQuery to SQL");
             e.printStackTrace();
         }
     }
     public void createKPRegion(LocalPlayer owner, Location location, int size_x, int size_y, int size_z, Player placer, ItemStack return_is, boolean auto_hide) {
         try {
             String uuid = generateUUID();
-            starchaser.kpManager.getSQLConnection().createStatement().executeUpdate("INSERT INTO `KPBlocks` (`protection_uuid`, `placer_uuid`, `world`, `x`, `y`, `z`, `return_itemstack`, `is_hideing`, `size_x`, `size_y`, `size_z`) VALUES ('"+uuid+"', '"+placer.getUniqueId()+"', '"+location.getWorld()+"', '"+location.getX()+"', '"+location.getY()+"', '"+location.getZ()+"', '"+ encodeItem(return_is) +"', '" + (auto_hide ? "true" : "false") + "', '"+size_x+"', '"+size_y+"', '"+size_z+"')");
+            utils.kpManager.getSQLConnection().createStatement().executeUpdate("INSERT INTO `KPBlocks` (`protection_uuid`, `placer_uuid`, `world`, `x`, `y`, `z`, `return_itemstack`, `is_hideing`, `size_x`, `size_y`, `size_z`) VALUES ('"+uuid+"', '"+placer.getUniqueId()+"', '"+location.getWorld()+"', '"+location.getX()+"', '"+location.getY()+"', '"+location.getZ()+"', '"+ encodeItem(return_is) +"', '" + (auto_hide ? "true" : "false") + "', '"+size_x+"', '"+size_y+"', '"+size_z+"')");
             getInterface().addCuboidRegion(uuid,location,new Location(location.getWorld(),size_x,size_y,size_z));
             Log(true,false,"UUID: Region " + uuid + " created!");
         } catch (SQLException e) {
-            starchaser.kpManager.Log(false,true,"Error on create new region to SQL");
+            utils.kpManager.Log(false,true,"Error on create new region to SQL");
             e.printStackTrace();
         }
     }

@@ -15,26 +15,26 @@ public class KPListener implements Listener {
     @EventHandler
     public void KPBlockBreakEvent(KPBlockBreakEvent e) {
         IWrappedRegion protectedRegion = e.getInfo().getRegion();
-        LocalPlayer localPlayer = starchaser.kpManager.getWorldGuardPlugin().wrapPlayer(e.getPlayer());
+        LocalPlayer localPlayer = utils.kpManager.getWorldGuardPlugin().wrapPlayer(e.getPlayer());
         Player p = e.getPlayer();
         if (protectedRegion.getOwners().getPlayers().contains(localPlayer.getUniqueId()) || p.hasPermission("karenprotect.*") || p.isOp() || p.hasPermission("karenprotect.admin")) {
             e.getParent().setCancelled(true);
             e.getParent().setExpToDrop(0);
             e.getParent().getBlock().setType(Material.AIR);
-            starchaser.kpManager.removeKPRegion(e.getInfo().getProtectionUUID());
+            utils.kpManager.removeKPRegion(e.getInfo().getProtectionUUID());
             e.getPlayer().getInventory().addItem(e.getInfo().getReturnItemStack());
         }
     }
     @EventHandler
     public void KPBlockPlaceEvent(KPBlockPlaceEvent e) {
-        WorldGuardPlugin wg = starchaser.kpManager.getWorldGuardPlugin();
+        WorldGuardPlugin wg = utils.kpManager.getWorldGuardPlugin();
         Player p = e.getPlayer();
         Block block = e.getParent().getBlock();
         LocalPlayer localPlayer = wg.wrapPlayer(p);
-        IWrappedRegion region = starchaser.kpManager.getKPRegionFormBlock(block);
-        if (region == null) starchaser.kpManager.getInterface().getRegion(block.getLocation().getWorld(), "__global__");
-        if (starchaser.kpManager.getWorldGuardPlugin().createProtectionQuery().testBlockPlace(localPlayer,block.getLocation(),block.getType())) {
-            starchaser.kpManager.createKPRegion(localPlayer, block.getLocation(),e.getKpBlock().getSizeX(),e.getKpBlock().getSizeZ(),e.getKpBlock().getSizeZ(),e.getPlayer(),e.getItem(),e.getKpBlock().isAutoHide());
+        IWrappedRegion region = utils.kpManager.getKPRegionFormBlock(block);
+        if (region == null) utils.kpManager.getInterface().getRegion(block.getLocation().getWorld(), "__global__");
+        if (utils.kpManager.getWorldGuardPlugin().createProtectionQuery().testBlockPlace(localPlayer,block.getLocation(),block.getType())) {
+            utils.kpManager.createKPRegion(localPlayer, block.getLocation(),e.getKpBlock().getSizeX(),e.getKpBlock().getSizeZ(),e.getKpBlock().getSizeZ(),e.getPlayer(),e.getItem(),e.getKpBlock().isAutoHide());
         }
     }
 }

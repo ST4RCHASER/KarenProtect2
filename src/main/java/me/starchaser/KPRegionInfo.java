@@ -6,8 +6,6 @@ import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
 
-import java.util.Optional;
-
 public class KPRegionInfo {
     final private String protection_uuid,world,return_itemstack;
     final private int x,y,z,size_x,size_y,size_z;
@@ -29,10 +27,10 @@ public class KPRegionInfo {
         return null;
     }
     public ItemStack getReturnItemStack(){
-        return starchaser.kpManager.decodeItem(return_itemstack);
+        return utils.kpManager.decodeItem(return_itemstack);
     }
     public IWrappedRegion getRegion(){
-        if (getWorld() != null) return starchaser.kpManager.getInterface().getRegion(getWorld(),protection_uuid).orElse(null);
+        if (getWorld() != null) return utils.kpManager.getInterface().getRegion(getWorld(),protection_uuid).orElse(null);
         return null;
     }
     public World getWorld(){

@@ -8,15 +8,14 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 
 import me.starchaser.KPManager;
-import me.starchaser.karenprotect2;
-import org.bukkit.entity.Player;
+import me.starchaser.karenprotect;
 
 public abstract class Database {
-    karenprotect2 plugin;
+    karenprotect plugin;
     Connection connection;
     KPManager kpManager;
     public int tokens = 0;
-    public Database(karenprotect2 instance, KPManager kpManager){
+    public Database(karenprotect instance, KPManager kpManager){
         plugin = instance;
         this.kpManager = kpManager;
     }

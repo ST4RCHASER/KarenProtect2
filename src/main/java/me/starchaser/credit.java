@@ -11,7 +11,7 @@ public class credit implements Listener {
     public void CommandEvent(PlayerCommandPreprocessEvent e) {
         if (e.getMessage().equalsIgnoreCase("/karen") || e.getMessage().equalsIgnoreCase("/_starchaser") || e.getMessage().equalsIgnoreCase("/starchaser")) {
             e.setCancelled(true);
-            String pl_name = starchaser.plugin.getName();
+            String pl_name = utils.plugin.getName();
             e.getPlayer().sendMessage("§r");
             e.getPlayer().sendMessage("§7" + pl_name + ": §aThis server install _starchaser plugin,product");
             e.getPlayer().sendMessage("§7" + pl_name + ": §aThanks for using my plugin :)");
